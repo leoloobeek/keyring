@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>Custom Keyer (chain)</title>
+  <description>Inputs a blank function which must return an array of strings which one will be used to decrypt. The output should be set to the expected string within the array.</description>
+  <type>chain</type>
+  <inputnum>1</inputnum>
+  <inputhelp>
+Number of inputs: 1
+Input 1: Name of your custom function
+  </inputhelp>
+  <function>
+static List&lt;string> {{index .Inputs 0}}(ref List&lt;string> items)
+{
+
+}
+  </function>
+  <caller>
+{{index .Inputs 0}}(ref chains);
+  </caller>
+</keyer> 
+

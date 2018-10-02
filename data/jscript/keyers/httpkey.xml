@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>HTTP Key</title>
+  <description>Makes request to a URL and hashes the HTML.</description>
+  <type>combo</type>
+  <inputnum>2</inputnum>
+  <inputhelp>
+Number of inputs: 2
+Input 1: The URL
+    ex) https://somesite.com/index.html
+Input 2: User Agent (https://developers.whatismybrowser.com/useragents/explore/)
+    ex) Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko
+  </inputhelp>
+  <function>
+function GetHttpKey(url, ua) {
+    var xHttp = new ActiveXObject("MSXML2.XMLHTTP");
+    xHttp.Open("GET", url, false);
+    xHttp.setRequestHeader("User-Agent", ua);
+    xHttp.Send();
+    response = xHttp.responseText;
+    return getSHA512(response);
+}
+  </function>
+  <caller>
+combos.push("{{index .Inputs 0}}", "{{index .Inputs 1}}");
+  </caller>
+</keyer> 

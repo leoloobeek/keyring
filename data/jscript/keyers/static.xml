@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>Static Key</title>
+  <description>Basic encryption where the key is stored within the final payload</description>
+  <type>combo</type>
+  <inputnum>0</inputnum>
+  <inputhelp>
+Number of inputs: 0
+  </inputhelp>
+  <function></function>
+  <caller>
+combos.push("{{.Output}}");
+  </caller>
+</keyer> 
+

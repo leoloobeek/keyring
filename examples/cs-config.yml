@@ -1,0 +1,17 @@
+language: csharp
+payloadFile: Tester.dll
+assemblyType: Tester.Environmental
+assemblyMethod: Dive
+keyers:
+  - 
+    name: envkey
+    inputs: 
+      - USERDOMAIN
+    output: DEV
+  - 
+    name: envkey
+    inputs: 
+      - USERNAME
+    output: Administrator
+retries: 0
+sleep: 10

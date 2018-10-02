@@ -1,0 +1,15 @@
+language: powershell
+payloadFile: test.ps1
+keyers:
+  - 
+    name: envkey
+    inputs: 
+      - USERDOMAIN
+    output: DEV
+  - 
+    name: envkey
+    inputs: 
+      - USERNAME
+    output: Administrator
+retries: 0
+sleep: 10

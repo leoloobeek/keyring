@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>HTTP Key</title>
+  <description>Makes request to a URL and hashes the HTML.</description>
+  <type>combo</type>
+  <inputnum>2</inputnum>
+  <inputhelp>
+Number of inputs: 2
+Input 1: The URL
+    ex) https://somesite.com/index.html
+Input 2: User Agent (https://developers.whatismybrowser.com/useragents/explore/)
+    ex) Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko
+  </inputhelp>
+  <function>
+function Get-HttpKey {
+    param($hurl, $hua)
+    [System.Net.ServicePointManager]::Expect100Continue=0;
+    $wc = New-Object Net.WebClient
+    $wc.Headers.Add('User-Agent', $hua)
+    $wc.Proxy=[System.Net.WebRequest]::DefaultWebProxy
+    $wc.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
+    $resp = $wc.DownloadString($hurl)   
+
+    return (Get-SHA512Hash $b)[0..31] -join ""
+}
+  </function>
+  <caller>
+$combos += Get-HttpKey '{{index .Inputs 0}}' '{{index .Inputs 1}}'
+  </caller>
+</keyer> 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>Environmental Variable</title>
+  <description>Encrypts based on environment variables</description>
+  <type>combo</type>
+  <inputnum>1</inputnum>
+  <inputhelp>
+Number of inputs: 1
+Input 1: The environment variable name to request
+    ex) USERDNSDOMAIN
+  </inputhelp>
+  <function>
+  </function>
+  <caller>
+$combos += [Environment]::GetEnvironmentVariable("{{index .Inputs 0}}")
+  </caller>
+</keyer> 

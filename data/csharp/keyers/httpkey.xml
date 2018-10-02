@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>HTTP Key</title>
+  <description>Makes request to a URL and hashes the HTML.</description>
+  <type>combo</type>
+  <inputnum>2</inputnum>
+  <inputhelp>
+Number of inputs: 2
+Input 1: The URL
+    ex) https://somesite.com/index.html
+Input 2: User Agent (https://developers.whatismybrowser.com/useragents/explore/)
+    ex) Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko
+  </inputhelp>
+  <function>
+static string HttpKey(string url, string userAgent)
+{
+	var request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
+
+	request.Method = "GET";
+	request.UserAgent = userAgent;
+	request.ServicePoint.Expect100Continue = false;
+
+	request.Proxy = System.Net.WebRequest.DefaultWebProxy;
+	request.Proxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
+
+	var response = (System.Net.HttpWebResponse)request.GetResponse();
+	string html =  new System.IO.StreamReader(response.GetResponseStream()).ReadToEnd();
+	return SHA512(Encoding.UTF8.GetBytes(html), 0);
+}
+  </function>
+  <caller>
+combos.Add(HttpKey("{{index .Inputs 0}}", "{{index .Inputs 1}}"));
+  </caller>
+</keyer> 

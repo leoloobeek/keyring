@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>Custom Keyer (combo)</title>
+  <description>Inputs a blank function which must return a string which will be used to decrypt. The output should be set to the expected string returned from the function.</description>
+  <type>combo</type>
+  <inputnum>1</inputnum>
+  <inputhelp>
+Number of inputs: 1
+Input 1: Name of your custom function
+  </inputhelp>
+  <function>
+static string {{index .Inputs 0}}(string url, string userAgent)
+{
+
+}
+  </function>
+  <caller>
+combos.Add({{index .Inputs 0}}());
+  </caller>
+</keyer> 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>File/Folder Paths</title>
+  <description>Encrypts based on a folder or file path accessible to the host. Spiders all files
+      and folder paths under a specified directory</description>
+  <type>chain</type>
+  <inputnum>2</inputnum>
+  <inputhelp>
+Number of inputs: 2
+Input 1: The directory to start spidering from
+    ex) C:\Users
+  </inputhelp>
+  <function>
+  </function>
+  <caller>
+$chains += Get-ChildItem "{{index .Inputs 0}}" -Recurse -Force -ErrorAction SilentlyContinue | %{$_.FullName}
+  </caller>
+</keyer> 

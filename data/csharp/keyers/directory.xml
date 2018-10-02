@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>File/Folder Paths</title>
+  <description>Encrypts based on a folder or file path accessible to the host. Spiders all files
+      and folder paths under a specified directory</description>
+  <type>chain</type>
+  <inputnum>2</inputnum>
+  <inputhelp>
+Number of inputs: 2
+Input 1: The directory to start spidering from
+    ex) C:\Users
+Input 2: How far down the directory structure to go
+    ex) 5
+  </inputhelp>
+  <function>
+static List&lt;string> WalkDirs(string dir, ref List&lt;string> items, int depth)
+{
+	var x = System.IO.Directory.GetDirectories(dir);
+	foreach (string d in System.IO.Directory.GetDirectories(dir))
+	{
+		try
+		{
+			items.Add(d);
+			foreach (string f in System.IO.Directory.GetFiles(d))
+			{
+				items.Add(f);
+			}
+			if (depth > 0)
+			{
+				WalkDirs(d, ref items, depth - 1);
+			}
+		}
+		catch { continue; }
+	}
+	return items;
+}
+  </function>
+  <caller>
+WalkDirs("{{index .Inputs 0}}", ref chains, {{index .Inputs 1}});
+  </caller>
+</keyer> 
+

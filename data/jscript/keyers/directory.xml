@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>File/Folder Paths</title>
+  <description>Encrypts based on a folder or file path accessible to the host. Spiders all files
+      and folder paths under a specified directory</description>
+  <type>chain</type>
+  <inputnum>2</inputnum>
+  <inputhelp>
+Number of inputs: 2
+Input 1: The directory to start spidering from
+    ex) C:\Users
+Input 2: How far down the directory structure to go
+    ex) 5
+  </inputhelp>
+  <function>
+function WalkOS(allPaths,fso,folder,depth) {
+    var folEnum = new Enumerator(folder.SubFolders);
+    for (;!folEnum.atEnd(); folEnum.moveNext()) {
+        allPaths.push(fso.GetAbsolutePathName(folEnum.item()));
+        if(depth > 0) {
+            WalkOS(allPaths,fso,folEnum.item(),(depth-1));
+        }
+    }
+    var files = folder.Files;
+    var fc = new Enumerator(folder.Files);
+    for (;!fc.atEnd(); fc.moveNext()) {
+        allPaths.push(fso.GetAbsolutePathName(fc.item()));
+    }
+}
+function GetAllPaths() {
+    var allPaths = []
+    var startDir = "{{index .Inputs 0}}";
+    try {
+        var objFSO = new ActiveXObject("Scripting.FileSystemObject");
+        var startDirObject = objFSO.GetFolder(startDir);
+        WalkOS(allPaths,objFSO,startDirObject,{{index .Inputs 1}});  
+    }
+    catch(err) {}
+    return allPaths;
+}
+  </function>
+  <caller>
+chains.push.apply(chains, GetAllPaths());
+  </caller>
+</keyer> 
+

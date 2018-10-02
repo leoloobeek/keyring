@@ -1,0 +1,16 @@
+language: jscript
+payloadFile: test.js
+outputFile: result.js
+keyers:
+  - 
+    name: envkey
+    inputs: 
+      - USERDOMAIN
+    output: DEV
+  - 
+    name: envkey
+    inputs: 
+      - USERNAME
+    output: Administrator
+retries: 0
+sleep: 10

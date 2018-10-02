@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keyer>
+  <title>Processes</title>
+  <description>Encrypts based on a running process name on the endpoint.</description>
+  <type>chain</type>
+  <inputnum>0</inputnum>
+  <inputhelp>
+Number of inputs: 0
+  </inputhelp>
+  <function>
+static void GetProcesses(ref List&lt;string>items)
+{
+    System.Diagnostics.Process[] processes = System.Diagnostics.Process.GetProcesses();
+
+    foreach(System.Diagnostics.Process p in processes)
+    {
+        items.Add(p.ProcessName);
+    }
+}
+  </function>
+  <caller>
+GetProcesses(ref chains);
+  </caller>
+</keyer> 
+
+
