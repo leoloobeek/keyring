@@ -14,19 +14,20 @@ import (
 
 // Config holds the settings chosen by the user
 type Config struct {
-	Language    string        `yaml:"language"`
-	PayloadFile string        `yaml:"payloadFile"`
-	OutputFile  string        `yaml:"outputFile"`
-	Keyers      []ConfigKeyer `yaml:"keyers"`
-	Retries     string        `yaml:"retries"`
-	Sleep       string        `yaml:"sleep"`
-	BaseCode    string        `yaml:"baseCode"`
+	Language       string        `yaml:"language"`
+	PayloadFile    string        `yaml:"payloadFile"`
+	OutputFile     string        `yaml:"outputFile"`
+	Keyers         []ConfigKeyer `yaml:"keyers"`
+	Retries        string        `yaml:"retries"`
+	Sleep          string        `yaml:"sleep"`
+	DisableNesting bool          `yaml:"disableNesting"`
+	BaseCode       string        `yaml:"baseCode"`
 	// Used for C# payloads
-	AssemblyType   string `yaml:"assemblyType"`
-	AssemblyMethod string `yaml:"assemblyMethod"`
+	AssemblyType   string        `yaml:"assemblyType"`
+	AssemblyMethod string        `yaml:"assemblyMethod"`
 }
 
-// Keyer options provided within a config file
+// ConfigKeyer stores keyer options provided within a config file
 type ConfigKeyer struct {
 	Name   string   `yaml:"name"`
 	Inputs []string `yaml:"inputs"`

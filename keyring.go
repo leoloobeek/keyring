@@ -76,16 +76,45 @@ func main() {
 		return
 	}
 
-	finalKey, keyHash, payloadHash, outputFile, minusBytes := Run(config)
-
 	fmt.Println()
-	fmt.Println("    Raw Key:")
+
+	// if using httpkey with other methods, split them apart and nest the httpkey payload within the other keyers payload
+	// this prevents the httpkey url from being in plaintext until other keyers pass, and allows limits on keyserver to be
+	// respected for the target only (i.e. if you disable the payload via keyserver after 1 hit, non-targets will hit first)
+	if !config.DisableNesting {
+		outerKeyers := make([]lib.ConfigKeyer, 0, len(config.Keyers))
+		innerKeyers := make([]lib.ConfigKeyer, 0, len(config.Keyers))
+		for _, keyer := range config.Keyers {
+			if keyer.Name == "httpkey" {
+				innerKeyers = append(innerKeyers, keyer)
+			} else {
+				outerKeyers = append(outerKeyers, keyer)
+			}
+		}
+		if len(outerKeyers) > 0 && len(innerKeyers) > 0 {
+			// when we have both outer and inner keyers, run the inner first on the input payload
+			config.Keyers = innerKeyers
+			innerKey, innerKeyHash, payloadHash, _, minusBytes := Run(config)
+			fmt.Println("    Intermediate Key:")
+			fmt.Printf("         %s\n", innerKey)
+			fmt.Println("    Intermediate Key Hash:")
+			fmt.Printf("         %s\n", innerKeyHash)
+			fmt.Println("    Intermediate Payload Hash (Minus Bytes):")
+			fmt.Printf("         %s (%d)\n", payloadHash, minusBytes)
+			// we write to output file, run the outer keyers on the intermediate output
+			config.PayloadFile = config.OutputFile
+			config.Keyers = outerKeyers
+		}
+	}
+
+	finalKey, finalKeyHash, payloadHash, outputFile, minusBytes := Run(config)
+	fmt.Println("    Final Key:")
 	fmt.Printf("         %s\n", finalKey)
 	fmt.Println("    Final Key Hash:")
-	fmt.Printf("         %s\n", keyHash)
+	fmt.Printf("         %s\n", finalKeyHash)
 	fmt.Println("    Payload Hash (Minus Bytes):")
 	fmt.Printf("         %s (%d)\n", payloadHash, minusBytes)
-	fmt.Printf("     Payload written to %s\n", outputFile)
+	fmt.Printf("    Payload written to %s\n", outputFile)
 	fmt.Println()
 }
 
@@ -302,7 +331,7 @@ func functionMapToString(fMap map[string]string) string {
 func retrieveRemoteKeys(request string) {
 	// if request is a URL, obtain an HTTP key
 	if strings.HasPrefix(request, "http://") || strings.HasPrefix(request, "https://") {
-		httpKey, err := lib.GenerateHttpKey(request)
+		httpKey, err := lib.GenerateHTTPKey(request)
 		if err != nil {
 			fmt.Printf("[!] Error receiving HTTP key for %s: %s\n", request, err)
 			return

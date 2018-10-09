@@ -6,9 +6,9 @@ import (
 	"net/http"
 )
 
-// GenerateHttpKey reaches out to url, hashes the body and returns
+// GenerateHTTPKey reaches out to url, hashes the body and returns
 // the sha512 hash
-func GenerateHttpKey(url string) (string, error) {
+func GenerateHTTPKey(url string) (string, error) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
