@@ -6,11 +6,11 @@ keyers:
     name: envkey
     inputs: 
       - USERDOMAIN
-    output: DEV
+    keydata: DEV
   - 
     name: envkey
     inputs: 
       - USERNAME
-    output: Administrator
+    keydata: Administrator
 retries: 0
 sleep: 10
