@@ -14,6 +14,9 @@ go get -u github.com/leoloobeek/keyring
 ### Usage
 Head on over to the wiki for more usage information.
 
+### Contributions
+I'm sure there will definitely be bugs, but also this tool was written to match my workflow. If there's something you would find useful feel free to submit an Issue or even a PR!
+
 ### HUGE Thanks
 [Josh Pitts](https://twitter.com/midnite_runr) and [Travis Morrow](https://twitter.com/wired33) came up with the first practical use case of environmental keying with their [Genetic Malware presentation](https://www.youtube.com/watch?v=WI8Y24jTTlw). They then released [Ebowla](https://github.com/Genetic-Malware/Ebowla), which is a fantastic project and does a lot more than this one, such as OTP. This project would never have been possible without Josh, Travis, and Ebowla.
 
