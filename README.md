@@ -18,6 +18,8 @@ go get -u github.com/leoloobeek/keyring
 ### Usage
 Head on over to the wiki for more usage information.
 
+The [Walkthrough:Jscript](https://github.com/leoloobeek/keyring/wiki/Walkthrough:-JScript) page provides a full walkthrough, from beginning to end and is recommended to get started.
+
 ### Contributions
 I'm sure there will definitely be bugs, but also this tool was written to match my workflow. If there's something you would find useful feel free to submit an Issue or even a PR!
 
