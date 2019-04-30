@@ -13,4 +13,4 @@ keyers:
       - USERNAME
     keydata: Administrator
 retries: 0
-sleep: 10
+sleep: 0
