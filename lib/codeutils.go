@@ -7,10 +7,13 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
 )
+
+var KeyringDataPath string
 
 // Config holds the settings chosen by the user
 type Config struct {
@@ -68,7 +71,7 @@ type Keyer struct {
 
 // ParseLanguage takes a given language, finds the filename and returns the Language struct
 func ParseLanguage(lang string) (Language, error) {
-	langFile := fmt.Sprintf("./data/%s/lang.xml", lang)
+	langFile := fmt.Sprintf("%s/%s/lang.xml", KeyringDataPath, lang)
 	langBytes, err := ReadFile(langFile)
 	if err != nil {
 		return Language{}, err
@@ -87,7 +90,7 @@ func ParseKeyer(lang, keyer string) (Keyer, error) {
 
 // ParseKeyerFile takes a given language and keyer filename, then returns the Keyer struct
 func ParseKeyerFile(lang, keyerFileName string) (Keyer, error) {
-	keyerFile := fmt.Sprintf("./data/%s/keyers/%s", lang, keyerFileName)
+	keyerFile := fmt.Sprintf("%s/%s/keyers/%s", KeyringDataPath, lang, keyerFileName)
 	keyerBytes, err := ReadFile(keyerFile)
 	if err != nil {
 		return Keyer{}, err
@@ -101,9 +104,9 @@ func ParseKeyerFile(lang, keyerFileName string) (Keyer, error) {
 
 // GetLanguages returns all the langs based on directories in ./data
 func GetLanguages() []string {
-	items, err := ioutil.ReadDir("./data")
+	items, err := ioutil.ReadDir(KeyringDataPath)
 	if err != nil {
-		fmt.Printf("[!] Error reading folders under ./data: %s\n", err)
+		fmt.Printf("[!] Error reading folders under %s: %s\n", KeyringDataPath, err)
 		return nil
 	}
 
@@ -121,7 +124,7 @@ func GetLanguages() []string {
 func GetCodeFiles(lang, section string) []string {
 	ext := ".xml"
 
-	folderPath := fmt.Sprintf("./data/%s/%s/", lang, section)
+	folderPath := fmt.Sprintf("%s/%s/%s/", KeyringDataPath, lang, section)
 	items, err := ioutil.ReadDir(folderPath)
 	if err != nil {
 		fmt.Printf("[!] Error reading folders under %s: %s\n", folderPath, err)
@@ -244,4 +247,22 @@ func UpdateTemplate(code string, data interface{}) (string, error) {
 	buf := &bytes.Buffer{}
 	err := tpl.ExecuteTemplate(buf, "code", data)
 	return buf.String(), err
+}
+
+// GetKeyringDataPath finds out where keyring is running and where the ./data directory is
+func GetKeyringDataPath() {
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		KeyringDataPath = "./data"
+		return
+	}
+
+	dir += "/data"
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		KeyringDataPath = "./data"
+		return
+	}
+
+	KeyringDataPath = dir
 }

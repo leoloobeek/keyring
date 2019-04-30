@@ -25,6 +25,8 @@ func main() {
 
 	banner()
 
+	lib.GetKeyringDataPath()
+
 	// If we're just going to request a DNS or HTTP key, lets do that and get out
 	if *request != "" {
 		retrieveRemoteKeys(*request)
