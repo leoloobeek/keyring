@@ -4,6 +4,10 @@ KeyRing was written to make key derivation functions (keying) more approachable 
 
 This tool was developed to easily provide encryption/decryption code and other techniques for keying. The tool will output raw C#, JScript, or PowerShell that you can then build into your stage0/launcher payloads (e.g. MSBuild.exe). It should be expected that the raw output from these tools can and will be easily signatured. I find value in tools that don't do too much and give you the basics to allow for you to be creative when crafting your payloads.
 
+### Presentation and Background
+DerbyCon 8.0: Protect Your Payloads    
+https://www.youtube.com/watch?v=MHc3XP3XC4I
+
 ### Compiled Binaries
 You can retrieve the latest release of keyring binaries in the Releases page.
 
