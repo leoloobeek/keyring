@@ -22,6 +22,6 @@ function GetHttpKey(url, ua) {
 }
   </function>
   <caller>
-combos.push("{{index .Inputs 0}}", "{{index .Inputs 1}}");
+combos.push(GetHttpKey("{{index .Inputs 0}}", "{{index .Inputs 1}}"));
   </caller>
 </keyer> 
